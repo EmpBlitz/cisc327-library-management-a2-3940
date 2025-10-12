@@ -132,7 +132,7 @@ def return_book_by_patron(patron_id: str, book_id: int) -> Tuple[bool, str]:
     if not is_active:
         return False, "No borrow record found for this patron and book"
 
-    # Calculate late fee (do not block the return if overdue)
+    # Calculate late fee
     fee_info = calculate_late_fee_for_book(patron_id, book_id)
     fee_amount = round(float(fee_info.get("fee_amount", 0.0)), 2)
     days_overdue = int(fee_info.get("days_overdue", 0))
@@ -203,8 +203,6 @@ def calculate_late_fee_for_book(patron_id: str, book_id: int) -> Dict:
 def search_books_in_catalog(search_term: str, search_type: str) -> List[Dict]:
     """
     Search for books in the catalog.
-
-
     """
     if search_type not in {"title", "author", "isbn"}:
         return []
@@ -255,7 +253,7 @@ def get_patron_status_report(patron_id: str) -> Dict:
             "currently_borrowed": [],
             "total_late_fees": 0.00,
             "num_currently_borrowed": 0,
-            #"borrowing_history": [], # Placeholder
+            #"borrowing_history": [],
             "status": "Invalid patron ID"
         }
 
@@ -266,7 +264,7 @@ def get_patron_status_report(patron_id: str) -> Dict:
     num_currently_borrowed = len(active)
     total_late_fees = 0.00
     #Can't implement borrowing history without database functions for it
-    #borrowing_history = []  # Placeholder
+    #borrowing_history = []
 
     for record in active:
         fee_info = calculate_late_fee_for_book(patron_id, record.get("book_id"))
@@ -286,12 +284,22 @@ def get_patron_status_report(patron_id: str) -> Dict:
         "currently_borrowed": borrowed,
         "total_late_fees": round(total_late_fees,2),
         "num_currently_borrowed": num_currently_borrowed,
-        #"borrowing_history": [],  # Placeholder
+        #"borrowing_history": [],
     }
 
 def get_catalog_display() -> List[Dict]:
     """
     R2: returns list of books for catalog display
     """
-    return get_all_books()
-
+    rows = get_all_books()
+    result = []
+    for r in rows:
+        result.append({
+            "id": r["id"],
+            "title": r["title"],
+            "author": r["author"],
+            "isbn": r["isbn"],
+            "available_copies": int(r["available_copies"]),
+            "total_copies": int(r["total_copies"]),
+        })
+    return result
