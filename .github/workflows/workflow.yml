@@ -40,8 +40,6 @@ jobs:
             --cov-report=xml:coverage.xml
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
-          files: coverage.xml
-          fail_ci_if_error: true
           token: ${{ secrets.cccb4eaa-1898-4837-a5a7-f1bb157a7fda }}
